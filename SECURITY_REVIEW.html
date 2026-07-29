@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Secure Coding Review — AS Pharmacy</title>
+<style>
+  :root{
+    --bg:#0f172a;
+    --card:#1e293b;
+    --border:#334155;
+    --text:#e2e8f0;
+    --muted:#94a3b8;
+    --accent:#10b981;
+    --critical:#ef4444;
+    --high:#f97316;
+    --medium:#eab308;
+    --low:#10b981;
+    --code-bg:#0b1220;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    padding:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    line-height:1.65;
+  }
+  .wrapper{
+    max-width:900px;
+    margin:0 auto;
+    padding:40px 24px 80px;
+  }
+  header.title-block{
+    border-bottom:2px solid var(--accent);
+    padding-bottom:24px;
+    margin-bottom:32px;
+  }
+  header.title-block h1{
+    font-size:1.9rem;
+    margin:0 0 12px;
+    color:#fff;
+  }
+  .meta{
+    display:grid;
+    grid-template-columns:140px 1fr;
+    row-gap:6px;
+    font-size:0.92rem;
+    color:var(--muted);
+  }
+  .meta b{color:var(--text);}
+  .meta a{color:var(--accent); text-decoration:none;}
+  .meta a:hover{text-decoration:underline;}
+
+  h2{
+    font-size:1.35rem;
+    color:#fff;
+    margin-top:44px;
+    padding-bottom:8px;
+    border-bottom:1px solid var(--border);
+  }
+  h3{
+    font-size:1.1rem;
+    margin-top:32px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  p{color:var(--text);}
+  code{
+    background:var(--code-bg);
+    padding:2px 6px;
+    border-radius:4px;
+    font-family:'Consolas','Monaco',monospace;
+    font-size:0.88em;
+    color:#93c5fd;
+  }
+  pre{
+    background:var(--code-bg);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:16px;
+    overflow-x:auto;
+  }
+  pre code{
+    background:none;
+    padding:0;
+    color:#a5f3fc;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    margin:16px 0;
+    font-size:0.92rem;
+  }
+  th, td{
+    border:1px solid var(--border);
+    padding:10px 12px;
+    text-align:left;
+  }
+  th{
+    background:var(--card);
+    color:#fff;
+  }
+  tr:nth-child(even){background:rgba(255,255,255,0.02);}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-left:4px solid var(--accent);
+    border-radius:8px;
+    padding:20px 24px;
+    margin:20px 0;
+  }
+  .card.critical{border-left-color:var(--critical);}
+  .card.high{border-left-color:var(--high);}
+  .card.medium{border-left-color:var(--medium);}
+  .card.low{border-left-color:var(--low);}
+
+  .badge{
+    display:inline-block;
+    font-size:0.72rem;
+    font-weight:700;
+    letter-spacing:0.03em;
+    padding:3px 10px;
+    border-radius:999px;
+    text-transform:uppercase;
+  }
+  .badge.critical{background:rgba(239,68,68,0.15); color:var(--critical); border:1px solid var(--critical);}
+  .badge.high{background:rgba(249,115,22,0.15); color:var(--high); border:1px solid var(--high);}
+  .badge.medium{background:rgba(234,179,8,0.15); color:var(--medium); border:1px solid var(--medium);}
+  .badge.low{background:rgba(16,185,129,0.15); color:var(--low); border:1px solid var(--low);}
+
+  .filepath{
+    font-size:0.85rem;
+    color:var(--muted);
+    margin:4px 0 12px;
+  }
+  .remediation{
+    margin-top:14px;
+    padding-top:12px;
+    border-top:1px dashed var(--border);
+  }
+  .remediation strong{color:var(--accent);}
+  ul{padding-left:22px;}
+  li{margin-bottom:6px;}
+  .note{
+    background:rgba(16,185,129,0.08);
+    border:1px solid rgba(16,185,129,0.3);
+    border-radius:8px;
+    padding:14px 18px;
+    font-size:0.9rem;
+    color:var(--muted);
+  }
+  footer{
+    margin-top:56px;
+    padding-top:20px;
+    border-top:1px solid var(--border);
+    font-size:0.85rem;
+    color:var(--muted);
+    text-align:center;
+    font-style:italic;
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <header class="title-block">
+    <h1>🔒 Secure Coding Review Report</h1>
+    <div class="meta">
+      <b>Project</b><span>AS Pharmacy — Medical Store Automation System</span>
+      <b>Stack</b><span>PHP 8 (PDO/MySQL backend), HTML/CSS/JavaScript frontend, Docker</span>
+      <b>Reviewer</b><span>Abubakar Basharat — CodeAlpha Cybersecurity Internship (Task 3)</span>
+      <b>Scope</b><span><code>api/*.php</code> (auth, users, medicines, sales, settings, attendance, setup, config), <code>.htaccess</code></span>
+    </div>
+  </header>
+
+  <h2>1. Objective</h2>
+  <p>This review audits the AS Pharmacy backend for common web application security vulnerabilities, following the OWASP Top 10 methodology. The goal is to identify insecure coding practices, rate their severity, and provide concrete remediation steps.</p>
+
+  <h2>2. Methodology</h2>
+  <table>
+    <tr><th>Method</th><th>Tool / Approach</th></tr>
+    <tr><td>Static Analysis</td><td>Custom Semgrep ruleset (hardcoded secrets, plaintext password comparison) run against <code>api/*.php</code></td></tr>
+    <tr><td>Manual Code Review</td><td>Line-by-line inspection of all 8 PHP endpoint files + <code>.htaccess</code></td></tr>
+    <tr><td>Reference Standard</td><td>OWASP Top 10 (2021)</td></tr>
+  </table>
+  <div class="note">
+    <b>Note on tooling:</b> Semgrep's hosted rule registry (<code>p/php</code>, <code>p/security-audit</code>) was unreachable in the sandboxed environment, so a scoped custom rule set was written locally. It correctly flagged the hardcoded-credential findings below; a few pattern-matching false positives (broad <code>$sql = "..."</code> matches) were filtered out during manual verification. This is normal practice — automated tools narrow the search, but findings still need human confirmation.
+  </div>
+
+  <h2>3. Findings</h2>
+
+  <div class="card critical">
+    <h3><span class="badge critical">Critical</span> Hardcoded Database Credentials</h3>
+    <div class="filepath">Files: <code>api/config.php</code> (line 24), <code>api/setup.php</code> (lines 10–14) &nbsp;·&nbsp; OWASP A05:2021 – Security Misconfiguration / CWE-798</div>
+    <p>Database host, port, username, and password are hardcoded directly in source files committed to a <b>public GitHub repository</b>:</p>
+    <pre><code>define('DB_PASS', '••••••••••••••••••••••••••••••••');</code></pre>
+    <p>Anyone who views the repo has full read/write access to the live database — including editing user accounts, deleting sales records, or dumping the whole <code>users</code> table.</p>
+    <div class="remediation">
+      <strong>Remediation:</strong>
+      <ul>
+        <li>Rotate the MySQL credentials immediately (the current ones are compromised since they're in a public repo history).</li>
+        <li>Move all credentials to environment variables (<code>getenv('DB_PASS')</code>) injected via Railway's environment variable settings, never committed to Git.</li>
+        <li>Purge the old credentials from Git history (e.g. with <code>git filter-repo</code>), since rotation alone doesn't remove them from old commits.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card critical">
+    <h3><span class="badge critical">Critical</span> Plaintext Password Storage &amp; Comparison</h3>
+    <div class="filepath">Files: <code>api/auth.php</code> (lines 28, 61, 116–117), <code>api/users.php</code> (lines 39, 60), <code>api/setup.php</code> (line 93) &nbsp;·&nbsp; OWASP A02:2021 – Cryptographic Failures / CWE-256</div>
+    <p>Passwords are stored and compared as plain strings:</p>
+    <pre><code>if (!$user || $user['password'] !== $password) { ... }</code></pre>
+    <p>Seeded default accounts even use trivial passwords (<code>admin</code> / <code>staff</code>). If the database is ever leaked, every user's real password is exposed instantly — a serious problem since people frequently reuse passwords across sites.</p>
+    <div class="remediation">
+      <strong>Remediation:</strong>
+      <ul>
+        <li>Hash all passwords with <code>password_hash($password, PASSWORD_BCRYPT)</code> at registration/reset time.</li>
+        <li>Verify logins with <code>password_verify($input, $user['password'])</code> instead of <code>!==</code>.</li>
+        <li>Force a password reset for all existing accounts after migrating, since old plaintext values can't be un-hashed.</li>
+        <li>Replace seeded default passwords with strong, unique values, and prompt for change on first login.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card high">
+    <h3><span class="badge high">High</span> Broken Access Control (No Authorization Checks)</h3>
+    <div class="filepath">Files: <code>api/users.php</code>, <code>api/medicines.php</code>, <code>api/sales.php</code>, <code>api/settings.php</code>, <code>api/attendance.php</code> &nbsp;·&nbsp; OWASP A01:2021 – Broken Access Control / CWE-862</div>
+    <p>Every state-changing endpoint (<code>POST</code>, <code>PUT</code>, <code>DELETE</code>) only checks <code>session_start()</code> — it never verifies <b>who</b> is logged in or <b>what role</b> they have before executing. For example, <code>users.php</code>'s <code>DELETE</code> case will delete any user by ID for <i>any</i> visitor with an open session, staff or not. The <code>role</code> field is only checked client-side in <code>components.js</code> to hide/show UI buttons — that's cosmetic, not security, since any user can call the API endpoints directly regardless of what the UI shows them.</p>
+    <div class="remediation">
+      <strong>Remediation:</strong>
+      <p>Add a shared authorization helper in <code>config.php</code>, called at the top of every privileged action:</p>
+      <pre><code>function requireRole($role) {
+    if (empty($_SESSION['user_id']) || $_SESSION['role'] !== $role) {
+        respond(['error' => 'Forbidden'], 403);
+    }
+}</code></pre>
+      <ul>
+        <li>Store <code>role</code> in the session at login (currently only <code>user_id</code> is stored), and check it server-side before any write/delete operation.</li>
+        <li>Never trust role information sent from the client in a request body.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card medium">
+    <h3><span class="badge medium">Medium</span> Publicly Accessible Database Installer</h3>
+    <div class="filepath">File: <code>api/setup.php</code> &nbsp;·&nbsp; OWASP A05:2021 – Security Misconfiguration</div>
+    <p><code>setup.php</code> is reachable at a public URL and re-creates tables / reseeds default admin credentials without any authentication. If tables are ever dropped, anyone who finds this URL can re-run it and get a system with known default logins.</p>
+    <div class="remediation">
+      <strong>Remediation:</strong>
+      <ul>
+        <li>Delete or move this script out of the web root after initial deployment.</li>
+        <li>If it must stay, protect it with a one-time setup token or IP allowlist, and make it exit immediately if <code>users</code> table already has rows.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card medium">
+    <h3><span class="badge medium">Medium</span> Overly Permissive CORS Policy</h3>
+    <div class="filepath">Files: <code>api/config.php</code> (line 12), <code>.htaccess</code> (line 10) &nbsp;·&nbsp; OWASP A05:2021 – Security Misconfiguration</div>
+    <pre><code>header('Access-Control-Allow-Origin: *');</code></pre>
+    <p>This allows <b>any</b> website to make authenticated requests to the API from a user's browser, which widens the attack surface for cross-origin data theft, especially combined with the missing access-control checks above.</p>
+    <div class="remediation">
+      <strong>Remediation:</strong>
+      <ul>
+        <li>Restrict <code>Access-Control-Allow-Origin</code> to the actual frontend domain only (e.g. <code>https://aspharmacy-production.up.railway.app</code>), not <code>*</code>.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card low">
+    <h3><span class="badge low">Good Practice</span> Positive Findings</h3>
+    <ul>
+      <li>All database queries use <b>PDO prepared statements</b> with bound parameters — no raw string interpolation into SQL was found. This effectively prevents classic SQL Injection across <code>medicines.php</code>, <code>sales.php</code>, <code>attendance.php</code>, <code>users.php</code>.</li>
+      <li><code>sanitize()</code> in <code>config.php</code> applies <code>htmlspecialchars</code> + <code>strip_tags</code>, a reasonable baseline against stored XSS, though it isn't consistently called on every input field — worth auditing per-endpoint.</li>
+      <li>Security response headers (<code>X-Content-Type-Options</code>, <code>X-Frame-Options</code>, CSP, etc.) are already configured in <code>config.php</code>, which many student projects skip.</li>
+    </ul>
+  </div>
+
+  <h2>4. Summary Table</h2>
+  <table>
+    <tr><th>#</th><th>Finding</th><th>Severity</th><th>OWASP Category</th></tr>
+    <tr><td>1</td><td>Hardcoded DB credentials in public repo</td><td><span class="badge critical">Critical</span></td><td>A05 – Security Misconfiguration</td></tr>
+    <tr><td>2</td><td>Plaintext password storage/comparison</td><td><span class="badge critical">Critical</span></td><td>A02 – Cryptographic Failures</td></tr>
+    <tr><td>3</td><td>No server-side authorization checks</td><td><span class="badge high">High</span></td><td>A01 – Broken Access Control</td></tr>
+    <tr><td>4</td><td>Public unauthenticated DB installer script</td><td><span class="badge medium">Medium</span></td><td>A05 – Security Misconfiguration</td></tr>
+    <tr><td>5</td><td>Wildcard CORS policy</td><td><span class="badge medium">Medium</span></td><td>A05 – Security Misconfiguration</td></tr>
+  </table>
+
+  <h2>5. Recommendations (Priority Order)</h2>
+  <ul>
+    <li>Rotate DB credentials + move to environment variables — <b>do this first</b>, since the current ones are already public.</li>
+    <li>Migrate to <code>password_hash()</code>/<code>password_verify()</code> and force password resets.</li>
+    <li>Implement server-side session-based role checks on every write/delete endpoint.</li>
+    <li>Remove or lock down <code>setup.php</code>.</li>
+    <li>Tighten CORS to the real frontend origin.</li>
+  </ul>
+
+  <h2>6. Conclusion</h2>
+  <p>AS Pharmacy demonstrates solid fundamentals in SQL injection prevention (consistent use of PDO prepared statements) and has some security headers already in place. However, credential management, password storage, and authorization are the weakest areas and should be treated as the immediate next milestone before any further feature work or redeployment.</p>
+
+  <footer>Prepared as part of CodeAlpha Cybersecurity Internship — Task 3: Secure Coding Review.</footer>
+
+</div>
+</body>
+</html>
